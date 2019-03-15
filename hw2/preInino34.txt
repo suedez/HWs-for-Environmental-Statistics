@@ -1,0 +1,148 @@
+# Nino34 index based on GPCC station-based land precipitation projected on ENSO teleconnections
+# using regression patterns
+# file :: /data/storage/climexp/data/itelecon_nino34_gpcc.dat
+# description :: Nino34 prcp land
+# olderfile :: /home/oldenbor/climexp/GPCCData/gpcc_10_combined.nc
+# cdi :: Climate Data Interface version 1.6.5.1 (http://code.zmaw.de/projects/cdi)
+# summary :: The Full Data Monthly Product is of much higher accuracy compared to the GPCC near real-time products mentioned above. Therefore, its application is recommended for hydrometeorological model verification and water cycle studies, e.g. in context of UNESCO, GEWEX, and GTN-H (Global Terrestrial Network for Hydrology). This analysis product is based on all stations, near real-time and non real-time, in the GPCC data base supplying data for the individual month. The GPCC Full Data Monthly Product Version 2018 covers the period from 1891 to 2016 ; this new extended product version using the new GPCC climatology as analysis background was generated in May 2018. The data coverage per month varies from less than 10,000 to more than 50,000 stations. The full data re-analyses will be updated at irregular time intervals subsequent to significant data base improvements.
+# keywords :: precipitation climatology,gpcc,global,gpcp,
+# id :: full_data_precipitation_10
+# creator_url :: http://gpcc.dwd.de
+# creator_name :: GPCC/DWD
+# creator_email :: gpcc@dwd.de
+# date_created :: Mi 30. Mai 07:01:41 UTC 2018
+# time_coverage_resolution :: month
+# geospatial_lat_min ::    -90.0
+# geospatial_lat_max ::     90.0
+# geospatial_lon_min ::   -180.0
+# geospatial_lon_max ::    180.0
+# doi :: 10.5676/DWD_GPCC/FD_M_V2018_10
+# cdo :: Climate Data Operators version 1.6.5.1 (http://code.zmaw.de/projects/cdo)
+# institution :: KNMI Climate Explorer and Deutscher Wetterdienst and KNMI (merging)
+# geospatial_lat_resolution ::      1.0
+# geospatial_lon_resolution ::      1.0
+# geospatial_lon_units :: degrees_east
+# geospatial_lat_units :: degrees_north
+# time_coverage_start :: 1982-01-15
+# time_coverage_end :: 2019-01-15
+# climexp_url :: https://climexp.knmi.nl/select.cgi?gpccall_10
+# pattern_conventions :: CF-1.0
+# pattern_field_variable :: precip
+# pattern_series_description :: iersst nino3+co2 monthly
+# pattern_series_file :: /Users/gj/NINO/climexp/data/dummy.12.dat
+# pattern_series_mask :: ersstv5_nino3.4_mask.nc
+# pattern_series_institution :: KNMI Climate Explorer
+# pattern_series_climexp_url :: https://climexp.knmi.nl/getindices.cgi?NCDCData/ersst_nino3.4a
+# pattern_series_index_10_description :: NINO3.4
+# pattern_series_index_10_file :: ersstv5.nc
+# pattern_series_index_10_mask :: ersstv5_nino3.4_mask.nc
+# pattern_series_index_10_institution :: KNMI Climate Explorer
+# pattern_series_index_10_climexp_url :: https://climexp.knmi.nl/getindices.cgi?NCDCData/ersst_nino3.4a
+# pattern_series_index_10_comment :: 
+# pattern_series_index_10_conventions :: CF-1.0
+# pattern_series_index_10_history ::  2019-01-15 14:16:56 dat2nc ./data/iersst_nino3.4a.dat i NINO3.4 ./data/iersst_nino3.4a.nc nuser oldenbor 2019-01-14 13:07:39 get_index ersstv5.nc mask ersstv5_nino3.4_mask.nc n
+# pattern_series_index_11_file :: co2_annual.dat
+# pattern_series_index_11_olderfile :: co2.dat
+# pattern_series_index_11_title :: co2_annual_12_combined.dat extended with maunaloa.dat
+# pattern_series_index_11_oldertitle :: co2.dat extended with co2_annual_12.dat
+# pattern_series_index_11_main_aux_file :: co2_annual.dat
+# pattern_series_index_11_main_aux_institution :: KNMI Climate Explorer and CSIRO Marine and Atmospheric Research via NCEI
+# pattern_series_index_11_main_aux_authors :: MacFarling Meure, C.; Etheridge, D.M.; Trudinger, C.; Steele, P.; Langenfelds, R.L.; van Ommen, T.D.; Smith, A.M.; Elkins, J.
+# pattern_series_index_11_main_aux_contact :: david.etheridge@csiro.au
+# pattern_series_index_11_main_aux_references :: Etheridge, D.M., L.P. Steele, R.L. Langenfelds, R.J. Francey, J.-M. Barnola, and V.I. Morgan.  1996. Natural and anthropogenic changes in atmospheric CO2 over the last 1000 years from air in Antarctic ice and firn. Journal of Geophysical Research, 101, 4115-4128.
+# pattern_series_index_11_main_aux_source_url :: https://www1.ncdc.noaa.gov/pub/data/paleo/icecore/antarctica/law/law2006.txt
+# pattern_series_index_11_main_aux_source :: https://www.ncdc.noaa.gov/paleo-search/study/9959
+# pattern_series_index_11_main_aux_description :: Law Dome ice core (DSS, DE08 and DE08-2), firn air (DSSW20K), and Cape Grim instrumental (deseasonalised archive, insitu and flask) records of CO2 concentrations for the past 2000 years.
+# pattern_series_index_11_main_aux_climexp_url :: http://climexp.knmi.nl/getindices.cgi?CDIACData/co2_monthly
+# pattern_series_index_11_main_aux_history :: user oldenbor 2019-01-14 15:26:29 yearly2shorter co2_annual.dat 12 month 1 ave 12 nretrieved from NCEI Thu Mar 15 17:59:48 MET 2018
+# pattern_series_index_11_institution :: KNMI Climate Explorer
+# pattern_series_index_11_bias_correction ::    0.495   0.191  -0.217  -1.085  -1.617  -1.905  -1.916  -1.199   0.433   1.641   1.665   1.188
+# pattern_series_index_11_history :: user oldenbor 2019-01-14 15:26:31 yearly2shorter co2_annual.dat 12 nuser oldenbor 2019-01-14 15:26:30 daily2longer co2_reallymonthly.dat 1 mean nuser oldenbor 2019-01-14 15:26:30 patchseries co2_annual_12_combined.dat maunaloa.dat bias nuser oldenbor 2019-01-14 15:26:29 patchseries co2.dat co2_annual_12.dat bias n
+# pattern_series_comment :: 
+# pattern_series_conventions :: CF-1.0
+# pattern_series_title :: time series with regressions subtractief
+# pattern_series_variable :: Nino3.4
+# pattern_series_variable_long_name :: ERSST v5 Nino3.4 index
+# pattern_series_history ::  2019-01-15 14:17:18 dat2nc ./data/iadded1.dat i iersst_nino3+co2_monthly ./data/iadded1.nc n 2019-01-15 14:17:18 ./bin/addseries data/dummy.12.dat file ./data/iersst_nino3.4a.dat month 1:12 fix1 fitfunc linear file CDIACData/co2_monthly.dat bootstrap plot ./data/iersst_nino3.4a59021.cor dump ./data/iersst_nino3.4a59021.dump n 2019-01-15 14:17:18 ./bin/addseries data/dummy.12.dat file ./data/iersst_nino3.4a.dat month 1:12 fix1 fitfunc linear file CDIACData/co2_monthly.dat bootstrap plot ./data/iersst_nino3.4a59021.cor dump ./data/iersst_nino3.4a59021.dump n
+# pattern_institution :: KNMI Climate Explorer
+# pattern_history ::  2019-01-15 14:17:45 ./bin/correlatefield data/s57903.ctl data/iadded1.dat month 1:12 fix2 fitfunc linear standardunits data/g20190115_1417_59795.nc n
+# pattern_title :: Linear correlations and regressions of GPCC Full Data Monthly Product Version 2018, precipitation in mm/month, 1.0 degree with the effect of co2_monthly.dat linearly subtracted and /Users/gj/NINO/climexp/data/iadded1.dat
+# pattern_file :: corr_prcp_nino34.nc
+# comment :: 
+# title :: GPCC Full Data Monthly Product Version 2018, precipitation in mm/month, 1.0 degree combined with the GPCC monitoring and first guess product
+# history ::  2019-02-14  4:09:27 bin/selectyear 1945 2018 data/itelecon_nino34_gpcc.dat telecon_nino34_gpcc_1945:2018\n 2019-02-13 21:33:05 bin/dat2nc data/itelecon_nino34_gpcc.dat i Nino34_prcp_land data/itelecon_nino34_gpcc.nc nuser oldenbor 2019-02-10  9:49:47 patternfield GPCCData/gpcc_10_combined.nc corr_prcp_nino34.nc regr 1 nThu Feb 07 13:18:33 2019: cdo -r -f nc4 -z zip copy gpcc_10.nc gpcc_10_mon1.nc gpcc_10_combined.nc nWed Dec 05 20:11:02 2018: cdo -r -f nc4 -z zip selvar,precip full_data_monthly_v2018_10.nc gpcc_10.nc nWed Jul 04 09:27:53 2018: cdo -setgrid,full10desc.asc full_data_monthly_v2018_10.nc test.nc nWed May 30 07:08:10 2018: cdo -setgatts,gattfile_10 .//full_data_monthly_v2018_10.nc tmp10.nc nWed May 30 07:01:24 2018: cdo -merge .//full_p_v2018_10.nc .//full_s_v2018_10.nc .//full_si_v2018_10.nc .//full_e_v2018_10.nc .//full_ei_v2018_10.nc .//full_d_v2018_10.nc .//full_data_monthly_v2018_10.nc nTue May 29 08:03:04 2018: cdo cat tmp10.nc .//full_d_v2018_10.nc nTue May 29 08:03:03 2018: cdo -b F32 -r -f nc -setgrid,full10desc.asc -setmissval,-99999.99 -setname,diff_new_old_method -setpartab,codetable.txt -setcode,25 -setdate,1891-01-01 -input,r360x180 tmp10.nc
+# nino34_prcp [1] Nino index from land precipitation
+ 1945  0.2280226     -0.2761698      -1.244720     -0.8747079      0.9801223E-02  0.3382623     -0.3214585     -0.3517813     -0.7560654     -0.6224749     -0.2706093E-01  0.4073539E-02
+ 1946 -0.5755755     -0.8397207      0.4333751E-01  0.5420240E-01  0.4390405      0.2139873      0.2437356     -0.2631611      0.3699829      0.4887080      0.3859590      0.5519926    
+ 1947  0.7866032     -0.1379596     -0.5302267     -0.8982713      0.1965766      0.7258414     -0.3315437     -0.4044932     -0.9891548     -0.6737780     -0.4440905      0.1169959    
+ 1948  0.2160585      0.1713560      0.4087574E-01  0.5111100      0.3698992     -0.9272846E-01 -0.1145007      0.1734962     -0.1350864      0.1881174     -0.3536696E-01  0.4282690    
+ 1949  0.2210435     -0.1195994     -0.4979174     -0.3975506     -0.9731946      -1.471387      -1.296156     -0.2613195      -1.271302      -1.043861     -0.6125064     -0.7271400    
+ 1950  -1.088543     -0.4646149      -1.385034      -1.458268     -0.3706327     -0.8324200     -0.9910769      -1.947640     -0.7819923      -1.227387     -0.7293664      -1.325138    
+ 1951 -0.4118149     -0.6905454      0.8479888      0.2670087      0.7400087      0.8208919     -0.3197776      0.5309703      0.2929644      0.9049643       1.102299      0.6233464    
+ 1952  0.4219429      0.2090960      0.9196843      0.6193408E-01 -0.1547614     -0.3302130     -0.1848078E-01  0.1049015     -0.2039711      -1.113354     -0.3341047     -0.5317351    
+ 1953 -0.3170982     -0.1440794      0.1864209      0.6502810       1.327866      0.7613080     -0.5113972      0.9416168      0.9347864      0.8685855     -0.2203953      0.4727832    
+ 1954  0.1372939      0.2116460     -0.4028362     -0.1387222     -0.1112743      -1.290933      -1.545135      -1.255019      -1.474652     -0.4468777     -0.8218806      -1.172938    
+ 1955 -0.1446136      -1.192896      -1.103791     -0.8452538     -0.9628703      -1.092887      -1.324100      -1.950633      -2.177225      -1.205234      -2.413239     -0.5985068    
+ 1956  -1.197965      -1.172241      -1.088098      -1.213799      -1.104594      -1.243833     -0.9854040      -1.088597     -0.9426385     -0.9452190     -0.7611592      -1.788611    
+ 1957 -0.1755212      0.5439115      0.3710444     -0.1125818       1.684523       1.942773      0.1897375      0.8417174       1.623887       1.264087       1.343466       1.270768    
+ 1958   1.510190       1.295653       1.439400       1.329936       1.986742       1.822753       1.140482     -0.8731461     -0.2273565     -0.5103070      0.1889010      0.9234910    
+ 1959  0.6679578       1.496083      0.1054940       1.011094      0.5084946     -0.2797081     -0.3876429      0.3979245     -0.3513995      0.5190236      0.3100574     -0.1517266    
+ 1960  0.7287759     -0.2455698      0.1842669     -0.1133181     -0.6600252     -0.1750108      -1.345531      0.4059808     -0.4251140      0.7058607E-01 -0.1820148     -0.1085215    
+ 1961  0.2888409      0.1142359      0.8824519     -0.4744996      -1.485967      0.1898697      0.4525843      0.5783880     -0.5867768      0.3422603      0.8980808      0.4780203    
+ 1962  -1.337798     -0.5655953     -0.1587549E-02 -0.7038739     -0.8242748     -0.2541726      0.6906382     -0.6086658     -0.6160082      0.2492148     -0.5828066E-01 -0.6096352    
+ 1963  -2.233370      -1.066161     -0.6828490      0.1068517      0.8013286      0.8285528       1.071146      0.7312295       1.135594      0.9592990       1.936645       1.241310    
+ 1964   1.935669      0.9442622     -0.1348245     -0.5201536      -1.339237     -0.3977411      -1.758816     -0.4581259      -1.026012      -1.038265      -1.697185     -0.3261835    
+ 1965 -0.4915766      0.6372417     -0.4714549     -0.2429163      0.1296252       1.869002       2.081352       1.351342       2.160984       1.487490       1.335733       1.010556    
+ 1966   1.442144       1.206658       1.477555       1.097248     -0.4366453      0.9445997      0.7540913     -0.7395075E-01  0.8254861      0.2531791     -0.4100065     -0.1481263    
+ 1967  -1.126928      -1.224771      -1.270568     -0.6372338     -0.7782848      0.1790878     -0.1342512      0.2476150      0.5590981      0.4360055      0.9313056      0.9660414    
+ 1968 -0.5137603     -0.5533938E-01  0.4241431E-01  0.2110458     -0.3606211      0.1756833     -0.2294305      0.6881854      0.2576324      0.5524317E-02  0.7858035      0.5768684    
+ 1969   1.091193       1.391788       1.184619      0.8962231       1.034094      0.6875376      0.5729771     -0.6169522      0.1834099      0.6081048      0.7425538     -0.2116247    
+ 1970  0.8975216      0.4006014      0.9523013      0.6477036      0.2259851     -0.4783214     -0.6582637     -0.9198731      -1.365097      -1.167922      -1.509865     -0.7870378    
+ 1971  -1.005540      -1.351251      -1.573966      -1.083464      -1.354880      -2.396924      0.2165010E-01  -1.429959     -0.8264748      -1.570653      -1.093695     -0.3991741    
+ 1972  -1.508786     -0.3182448     -0.7640834     -0.3011015E-01   1.272491       1.951852       2.689409       1.780404       2.154629       2.337492       1.516178       1.801340    
+ 1973   1.941651       1.491493     -0.2681967E-01 -0.2841522     -0.8458620     -0.4357616     -0.5843052      -1.562774      -1.939051      -1.198704      -2.348794      -2.012492    
+ 1974  -1.625438      -1.878337      -1.682586      -2.361406     -0.9512947      0.2185267      -1.060623      0.5825313      -1.077866      -1.767471     -0.9361628     -0.1775844    
+ 1975 -0.1082224     -0.2542396     -0.3585268     -0.8261085      -1.441541      -1.838253      -1.727300      -1.253178      -1.911599      -1.799419     -0.8760143      -2.563029    
+ 1976  -1.818610      -1.100331      -1.034557      0.2438013E-01  -1.297001      0.4412573      0.3410163      0.7770359       1.576354      0.6132352      0.1321895      0.4151766    
+ 1977  0.9443815      -1.287756     -0.1385170      0.1922567E-01  0.5141261     -0.4371800      0.3443780      0.1785600       1.025277       1.507778       1.142971       1.163083    
+ 1978  0.5625229       1.183708       1.048921     -0.2009442     -0.5580338     -0.2955976      -1.090879     -0.3439555     -0.6866722     -0.1679744      0.4939399      0.4711468    
+ 1979  0.9359069      0.7298068      0.5092045      0.4901239      0.3567593      0.1792779E-01  0.2389031      0.7924583      0.2337389      0.8382699      0.5967653      0.9788065    
+ 1980  0.4929806      0.1682959      0.9516857       1.397312       1.341632      0.4023859       1.002440     -0.6198497E-04  0.9670681     -0.7352956E-01  0.1960615     -0.1435439    
+ 1981 -0.8816606     -0.3103398       1.679718       1.306004      0.8598328      0.6166044     -0.9543079      0.8313591     -0.9304374     -0.9708241E-01 -0.9530617      0.9735721E-01
+ 1982 -0.1555808     -0.3468426E-01 -0.3222175     -0.1630221       1.188019       1.772816       1.753161       1.593955       1.938063       2.037135       2.792759       1.953867    
+ 1983   2.658509       2.727480       1.788031       2.990045       3.114278      0.6256837     -0.1460172     -0.3025225     -0.5542408      -1.142037     -0.6775242     -0.3526959    
+ 1984 -0.8028960      -1.403781     -0.1837496      -1.296271     -0.6008952      -1.774130      -1.580644      0.1368970     -0.8709579     -0.1003471      0.4489717     -0.1736566    
+ 1985  0.8314691      0.9205087E-01 -0.5585356      -1.775269     -0.9756976     -0.9002323     -0.8454711     -0.5614783     -0.5166209     -0.4296212     -0.2765339      0.6528069E-01
+ 1986 -0.9038442      0.6918117     -0.1604971E-01 -0.5348806      0.5160033     -0.3971740      0.5687749       1.196429      0.7837994     -0.4741164E-01  0.6185333       1.818687    
+ 1987   1.208841      0.8098770       1.967731       2.096480       2.661575       2.174866       2.141654       1.536179       1.616516       1.218847      0.3034696     -0.3160346E-01
+ 1988  0.6475190      0.1522310      0.5556681     -0.6346565     -0.9982231      -1.188505      -2.104026      -2.751439      -1.485074      -1.744618      -1.355484      -1.641975    
+ 1989 -0.7961662     -0.7117105      -1.527810      -2.070915      -1.531957      -1.208650     -0.9381294     -0.3207066     -0.3684299     -0.3379745      0.1201599      0.8760309    
+ 1990 -0.5140096       1.631488      0.5270513       1.287963     -0.4000412     -0.3097841     -0.5482977E-01  0.8143255      0.1699379     -0.1476859      0.4787596      0.7775102    
+ 1991  0.2646632     -0.5038850      0.8501427      0.4989602      0.9493097       1.102355      0.8129219      0.8794673       1.924336      0.9035652      0.7795023       2.173820    
+ 1992   2.411746       1.657753       2.490524       2.508838       2.842718       2.084639      0.1538088      0.6817403      0.3407515     -0.1236669       1.005203      0.7163030    
+ 1993  0.6826639      0.1338708       1.252007       1.229055       2.030230       1.182084      0.4822097       1.514312      0.6439965      0.6897238      0.8430879     -0.4112845    
+ 1994  0.1699462      0.1376959     -0.5297470E-01  0.2662724     -0.1309845      0.7779504E-01   1.381688      0.4533986       1.350891       1.847546       1.454598       1.633757    
+ 1995   1.241493      0.5862415      0.3658133     -0.2407074     -0.2160814     -0.5868026E-01 -0.3706242      -1.211976     -0.3071710     -0.4953826      -1.331998      -1.178830    
+ 1996  -1.453701     -0.8930157     -0.4108366      -1.150841     -0.5786824     -0.5390405     -0.3475120      -1.182052     -0.2344737     -0.8785249     -0.6984330     -0.7143747    
+ 1997 -0.3003980      -1.227831     -0.3389684E-01  0.6845214      0.7387572       2.602735       1.280205       2.268622       2.085491       2.524749       2.416115       2.245829    
+ 1998   1.933425       2.658375       1.963731       2.671204       1.071950     -0.9958503      -1.635062      -1.728506      -1.721213      -2.030284      -1.929473      -1.702528    
+ 1999  -1.908342      -1.852582      -1.416112      -2.020843      -1.796633      -1.313348     -0.4300851     -0.8416108     -0.8907842      -1.434932      -1.561994      -1.596151    
+ 2000 -0.9280220      -2.747634      -1.638276      -1.238099      -2.237449      -1.799666     -0.6953736E-01 -0.3036732     -0.2019402E-01  -1.190776     -0.8427894      -1.022048    
+ 2001 -0.5349470      -1.292346     -0.2936007     -0.5109491     -0.8984220     -0.8644820      0.6643746       1.096069     -0.1605052     -0.6098821     -0.8499498     -0.1261963    
+ 2002  0.5313660     -0.4972929E-01  0.9064530      0.5464549     -0.3093128      0.2701664       2.170859       1.561269       1.119326       1.901881      0.8700114       1.783665    
+ 2003   1.054054      0.4505815      0.2778096      0.8538828      -1.025442      0.5910684     -0.6154015      0.2179214     -0.8196147E-01 -0.7767939E-02  0.6279852     -0.3598968    
+ 2004   1.148771     -0.3715398     -0.6336159       1.038708     -0.5996599E-01  0.7034266     -0.3563100E-02   1.464592      0.2507693       1.069601      0.8585546      0.7500160    
+ 2005  0.3633681       1.493023      0.7215216      0.6156722       1.108867       1.351473     -0.5683370      0.4421197     -0.1747396     -0.7857124     -0.3054624      -1.721184    
+ 2006  -1.416811     -0.3325248      -1.277645      -1.366224      -1.035140      -1.203826       1.168427      0.9333301      0.3186372       1.652127       1.339743       1.107113    
+ 2007  0.5254718E-01  0.6946167     -0.6805224E-01 -0.2864922E-02 -0.1954328     -0.8781013     -0.7603769      -1.155581     -0.8857008     -0.8279214      -1.128352     -0.7471060    
+ 2008 -0.7772228      -2.205503      -1.324108      -1.360333      -1.630194      -1.254615      -1.027636      -1.718148      -1.069223     -0.8342174      -1.029250      -1.443952    
+ 2009  -1.739098      -1.702132     -0.2680611      -2.013111      -1.361137      0.8538050      0.9041093      0.6389261      0.9790149      0.4094210       1.167603       1.283533    
+ 2010  0.2397375       1.328293       1.460324     -0.3047830E-01  0.5835803     -0.5540782      -1.857358      -2.342404      -2.336346      -2.176732      -1.869324      -2.114940    
+ 2011  -2.011285      -2.016547      -3.190038      -1.679543      -1.546348      -1.059690     -0.3201978      0.8915271E-02 -0.5224674     -0.3256152     -0.2656499      -1.374235    
+ 2012  -1.120946     -0.4962351      -1.813669      0.5751727     -0.1641473      0.2366859     -0.5454351     -0.5711460      0.3059278      0.6190650      0.1399229      0.9208726    
+ 2013 -0.4853451     -0.1711097      0.1150330     -0.1133308E-01 -0.4954626      -1.074161      -1.942452     -0.9325333     -0.2469288      0.6475624E-01 -0.3782137     -0.1441985    
+ 2014  -1.115462     -0.3567499      0.5602835     -0.1077955      0.7037172      0.4591324       1.091317     -0.3391216      0.4744538      0.7468570      0.8130136     -0.1052486    
+ 2015 -0.4487048      0.8009519      0.6292096       1.049753       1.369163      0.2378208       1.846030       1.540553       1.827237       2.172156       2.001377       1.531963    
+ 2016   2.686425       1.689883       1.432323       2.348681       1.131705     -0.1412467      -1.175973      0.1398894      -1.130483      -1.221091     -0.4664314      -1.100602    
+ 2017 -0.6964641     -0.6545904     -0.7348512     -0.8570487E-01  0.2813607     -0.8965441     -0.5843052     -0.5870287     -0.6930268     -0.8155617     -0.7605864     -0.6783706    
+ 2018 -0.4210375     -0.4164200     -0.3882007E-01 -0.4873857      0.1490224      0.4003997      0.4897736      0.6980831      0.7327077       1.055843      0.3808034     -0.2643217    

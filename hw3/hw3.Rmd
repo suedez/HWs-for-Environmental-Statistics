@@ -1,0 +1,959 @@
+---
+title: "hw3"
+author: "Xinrui Zhang"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+UID: '605231530'
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+data_max<-read.csv('USW00023174_TMAX_clean.csv',header = T)
+value_max<-data_max$value
+
+data_min <- read.csv('USW00023174_TMIN_clean.csv',header = T)
+value_min <- data_min$value
+Nyear<-floor(length(value_max)/365)-1
+Nyear_full <- floor(length(value_max)/365)-1
+DAYofYEAR <-c(1:365)
+date_1<-as.Date('1944-8-1')
+date_2<-as.Date('1944-12-31')
+interval1 <- as.integer(difftime(date_2,date_1,units='days'))
+DAY1944 <- c((365-interval1):365)
+day_ordered<-c(DAY1944,rep(DAYofYEAR,Nyear_full)) 
+day_left <- length(value_max)-length(day_ordered) # day has the same order as the data
+day_ordered <- c(day_ordered,c(1:day_left))
+
+## separate a year into 12 month
+daySEPseason <- day_ordered #day seperated by month
+daySEPseason[(daySEPseason>=1 & daySEPseason<=59) | 
+               (daySEPseason>=335 & daySEPseason<=365)] <-1 #DJF
+daySEPseason[(daySEPseason>=60 & daySEPseason<=151)] <-2 #MAM
+daySEPseason[daySEPseason>=152 & daySEPseason<=243] <-3 #JJA
+daySEPseason[daySEPseason>=244 & daySEPseason<=334] <-4 #SON
+
+seasonDATA_frame <- data.frame(daySEPseason,value_max)
+seasonDATA_frameMIN <- data.frame(daySEPseason,value_min)
+seasonDATA_frame <- seasonDATA_frame[seasonDATA_frame$value_max!=-999.9,]
+seasonDATA_frameMIN <- seasonDATA_frameMIN[seasonDATA_frameMIN$value_min!=-999.9,]
+factormax <- as.factor(seasonDATA_frame$daySEPseason)
+factormin <- as.factor(seasonDATA_frameMIN$daySEPseason)
+meanmax <- tapply(seasonDATA_frame$value_max, factormax, mean)
+meanmin <- tapply(seasonDATA_frameMIN$value_min, factormin, mean)
+
+seasonDATA_frame <- data.frame(daySEPseason,value_max)
+seasonDATA_frameMIN <- data.frame(daySEPseason,value_min)
+
+for (i in (1:4)){
+  seasonDATA_frame$value_max[seasonDATA_frame$value_max == -999.9 & 
+                               seasonDATA_frame$daySEPseason == i] <- meanmax[i]
+  seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$value_min == -999.9 & 
+                                  seasonDATA_frameMIN$daySEPseason == i] <- meanmin[i]
+  
+}
+
+DJF_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==1]
+MAM_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==2]
+JJA_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==3]
+SON_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==4]
+
+DJF_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==1]
+MAM_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==2]
+JJA_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==3]
+SON_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==4]
+
+## calculate HDD & CDD
+
+HDD <- 15 - (DJF_max + DJF_min)/2 
+HDD[HDD < 0] <- 0
+CDD <- (JJA_max + JJA_min)/2 - 20 
+CDD[CDD < 0] <- 0
+
+CDDfactor <- as.vector(mapply(rep, 2:75, times = rep(92,74)))
+CDDfactor <- c(rep(1, 31), CDDfactor) 
+CDDfactor <- as.factor(CDDfactor)
+
+HDDfactor <- as.vector(mapply(rep, 2:74, times = rep(90,73)))
+HDDfactor <- c(rep(1, 31), HDDfactor, rep(75, 59)) 
+HDDfactor <- as.factor(HDDfactor)
+
+HDDmean <- tapply(HDD, HDDfactor, mean)
+CDDmean <- tapply(CDD, CDDfactor, mean)
+
+HDDmean <- as.vector(HDDmean)
+CDDmean <- as.vector(CDDmean)
+
+seasonfactor <- as.factor(c(1,1,2,2,2,3,3,3,4,4,4,1))
+seasonmean <- function(x){
+  tapply(x, seasonfactor, mean)
+}
+
+nino34 <- read.table('nino34a.txt')
+nino34 <- as.matrix(nino34[, -1])
+nino34SA <- apply(nino34, MARGIN = 1, FUN = seasonmean)
+nino34SON <- nino34SA[4, (1:61)]
+nino34MAM <- nino34SA[2, (1:61)]
+
+nino12 <- read.table('nino12a.txt')
+nino12 <- as.matrix(nino12[, -1])
+nino12SA <- apply(nino12, MARGIN = 1, FUN = seasonmean)#SA=seasonal average
+nino12SON <- nino12SA[4, (1:61)]
+nino12MAM <- nino12SA[2, (1:61)]
+
+PDO <- read.table('PDO.txt')
+PDO <- PDO[, -1]
+PDOSA <- apply(PDO, MARGIN = 1, FUN = seasonmean)
+PDOSON <- PDOSA[4, (1:61)]
+PDOMAM <- PDOSA[2, (1:61)]
+
+GTO <- read.table('GTO.txt')
+GTO <- GTO[, -1]
+GTOSA <- apply(GTO, MARGIN = 1, FUN = seasonmean)
+GTOSON <- GTOSA[4, (1:61)]
+GTOMAM <- GTOSA[2, (1:61)]
+
+solarirr <- read.table('solarirr.txt', header = F)
+solarirr <- solarirr[, -1]
+solarirrSA <- apply(solarirr, MARGIN = 1, FUN = seasonmean)
+solarirrSON <- solarirrSA[4, (1:61)]
+solarirrMAM <- solarirrSA[2, (1:61)]
+
+ninoPI <- read.table('preInino34.txt') #precipitation indecis
+ninoPI <- ninoPI[, -1]
+ninoPISA <- apply(ninoPI, MARGIN = 1, FUN = seasonmean)
+ninoPISON <- ninoPISA[4, (1:61)]
+ninoPIMAM <- ninoPISA[2, (1:61)]
+
+nino4 <- read.table('nino4ab.txt') #precipitation indecis
+nino4 <- nino4[, -1]
+nino4SA <- apply(nino4, MARGIN = 1, FUN = seasonmean)
+nino4SON <- nino4SA[4, (1:61)]
+nino4MAM <- nino4SA[2, (1:61)]
+
+minSON <- SON_min[-(1:91)]
+minSON <- minSON[1:(61*91)]
+SONfactor <- as.factor(mapply(rep, (1:61), times = rep(91, 61)))
+minSON <- as.vector(tapply(minSON, SONfactor, mean))
+
+minSONpre <- SON_min[-(1:91)]
+minSONpre <- minSONpre[(61*91+1):length(minSONpre)]
+SONfactor <- as.factor(mapply(rep, (1:13), times = rep(91, 13)))
+minSONpre <- as.vector(tapply(minSONpre, SONfactor, mean))
+```
+
+
+#1
+## Ridge Regression
+###1a 
+
+####A.Chose time as a 'trend' predictor, and the seasonal average minimum temperature in SON as a LA-temperature-related precdictor.
+
+```{r}
+## normalize
+normalize <- function(x){
+  x <- (x - mean(x)) / sd(x)
+}
+TIME <- 1:61
+nino34SON <- normalize(nino34SON)
+nino12SON <- normalize(nino12SON)
+ninoPISON <- normalize(ninoPISON)
+PDOSON <- normalize(PDOSON)
+GTOSON <- normalize(GTOSON)
+solarirrSON <- normalize(solarirrSON)
+TIME <- normalize(TIME)
+minSON <- normalize(minSON)
+
+X <- cbind(nino34SON, 
+           nino12SON, ninoPISON, PDOSON, GTOSON, solarirrSON, TIME, minSON)
+
+##trend
+y <- HDDmean[1:61]
+trend <- lm(y~TIME)
+slop <- trend$coefficients[2]
+trendc <- trend$coefficients[1]
+theta <- as.numeric(atan(slop))
+#library(car)
+#vif(lm(y~nino34SON + nino12SON))
+```
+
+
+###1b
+
+####B.Set number of folders as 6(decided by the same consideration of block size,that is, including all correlation in one folder), set a series of lambdas(51 lambdas in total)
+
+$$
+\lambda=10^{-2.0},10^{-1.9},10^{-1.8},...10^{1.9},10^{3.0}
+$$
+
+####C.Under each lambda, do regression and do cross-validation, do cross-validation for 5 times and get 5 standard errors. Store the sum of thede 5 standard errors of each lambda, determine under which lambda the standard error reached minimum, chose that lambda as optimal lambda.
+
+```{r message=FALSE, warning=FALSE}
+##determine fold size for cross validation
+y <- HDDmean[1:61]
+phil <- as.numeric(ar(y)$ar[1])
+effectiveN <- 100 * (1 - phil) / (1 + phil)
+L <- 1
+err <- 1
+tol <- 1e-6
+while(err > tol){
+  f <- L - (100  - L + 1) ^ (2/3 * (1-effectiveN/100))
+  J <- 1 + (2/3 * (1-effectiveN/100)) * 
+    ((100 - L + 1) ^ (2/3 * (1-effectiveN/100) - 1))
+  err = abs(f)
+  dl = as.numeric(solve(J) %*% f)
+  L = L - dl
+}
+cat('The fold size should be bigger than', L)
+
+lambdas <- 10 ^ seq(3, -2, by = -.1)
+library(glmnet)
+perr <- c() # standard error
+for (j in 1:51){
+  lambdai <- lambdas[j]
+  perri <- c()
+  ## exciting cross-validation :)
+  for (i in 1:5){
+    Xi <- cbind(
+          nino34SON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          nino12SON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          ninoPISON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          PDOSON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          GTOSON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          solarirrSON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          TIME[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          minSON[ - (((i - 1) * 10 + 1) : (i * 10))])
+    Yi <- y[ - (((i - 1) * 10 + 1) : (i * 10))]
+    fit_ridgei <- glmnet(Xi, Yi, alpha = 0, lambda = lambdai)
+    a0 <- rep(fit_ridgei$a0, 10)
+    beta <- fit_ridgei$beta
+    p1 <- nino34SON[(((i - 1) * 10 + 1) : (i * 10))]
+    p2 <- nino12SON[(((i - 1) * 10 + 1) : (i * 10))]
+    p3 <- ninoPISON[(((i - 1) * 10 + 1) : (i * 10))]
+    p4 <- PDOSON[(((i - 1) * 10 + 1) : (i * 10))]
+    p5 <- GTOSON[(((i - 1) * 10 + 1) : (i * 10))]
+    p6 <- solarirrSON[(((i - 1) * 10 + 1) : (i * 10))]
+    p7 <- TIME[(((i - 1) * 10 + 1) : (i * 10))]
+    p8 <- minSON[(((i - 1) * 10 + 1) : (i * 10))]
+    fit_func <- function(x1,
+                         x2,x3,x4,x5,x6,x7,x8){
+   y <- a0 + 
+     beta[1] * x1 + 
+     beta[2] * x2 + beta[3] * x3 + beta[4] * x4 + beta[5] * x5 +  beta[6] * x6 +  beta[7] * x7 +  beta[8] * x8 
+   return(y)
+    }
+    Ytrend <- trendc + slop * p7
+    Ytest <- y[(((i - 1) * 10 + 1) : (i * 10))]
+    Ypre <- fit_func(p1, 
+                     p2, p3, p4, p5, p6, p7, p8)
+    perri[i] <- mean(abs(Ypre - Ytest))
+  }
+  perr[j] <- mean(perri) #sum sum sum
+}
+# determine lambda
+lambda <- lambdas[which.min(perr)]
+cat('\nThe optimal lambda is', lambda)
+
+```
+
+##1c prediction error 
+```{r}
+ plot(lambdas, perr,xlim = c(0, 4), xlab = 'Lambda', ylab = 'Prediction Error', type = 'l')
+```
+
+####With smaller lambda，the penalty for parameters is smaller which may decrease the bias but increase the variance. However, if the penalty for parameters is too big, the parameters will lose the chance to interprete data, thus although variance will become small but the structure of the model is ruined and bias will increase and so does the prediction error.Thus there exisits a optimal penalty to balance the bias and variance thus can minimize the prediction error.
+
+## 1d
+
+```{r}
+fit_ridge <- glmnet(X, y, alpha = 0, lambda = lambda)
+summary(fit_ridge)
+fit_ridge$beta
+```
+
+####The magnitudes of'PDOSON', 'minSON', and 'TIME' are the biggest three, which is consitent with the predictors chosen by stepwise regression.
+
+## 1e
+
+```{r}
+p1 <- nino34SA[4, (62 : 74)];
+p2 <- nino12SA[4, (62 : 74)]
+p3 <- ninoPISA[4, (62 : 74)]
+p4 <- c(PDOSA[4, (62 : 73)], PDOSA[4, 73])
+p5 <- GTOSA[4, (62 : 74)]
+p6 <- solarirrSA[4, (62 : 74)]
+p7 <- (62 : 74)
+p8 <- minSONpre
+Xpre <- cbind(p1, 
+              p2, p3, p4, p5, p6, p7, p8)
+Xpre <- apply(Xpre, 2, normalize)
+
+ a0 <- rep(fit_ridge$a0, 12)
+ beta <- fit_ridge$beta
+
+
+HDDpre <- predict(fit_ridge, s = lambda, newx = Xpre)
+plot(HDDmean[62:74], type = 'p', col = 'blue', ylim = c(0, 3), ylab = 'HDD', xlab = 'Year')
+lines(HDDpre,type = 'p', col = 'red')
+legend('topright', c('observation','prediction'), 
+       lty = c(1,1), col = c('blue','red'),cex = 0.6)
+
+
+sse <- sum((HDDmean[62:74] - mean(HDDmean[62:74]))^2)
+sst <- sum((HDDpre - HDDmean[62:74])^2)
+
+# R squared
+rsq <- 1 - sse / sst
+cat('The Rsqure is', rsq)
+```
+
+####The R squre becomes a little bigger than stepwise regression model
+
+
+
+## Lasso Regression
+
+###1a
+
+```{r}
+library(glmnet)
+perr_lasso <- c() # standard error
+for (j in 1:51){
+  lambdai <- lambdas[j]
+  perri <- c()
+  ## exciting cross-validation :)
+  for (i in 1:5){
+    Xi <- cbind(
+          nino34SON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          nino12SON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          ninoPISON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          PDOSON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          GTOSON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          solarirrSON[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          TIME[ - (((i - 1) * 10 + 1) : (i * 10))], 
+          minSON[ - (((i - 1) * 10 + 1) : (i * 10))])
+    Yi <- y[ - (((i - 1) * 10 + 1) : (i * 10))]
+    fit_lassoi <- glmnet(Xi, Yi, alpha = 1, lambda = lambdai)
+    a0 <- rep(fit_lassoi$a0, 10)
+    beta <- fit_lassoi$beta
+    p1 <- nino34SON[(((i - 1) * 10 + 1) : (i * 10))]
+    p2 <- nino12SON[(((i - 1) * 10 + 1) : (i * 10))]
+    p3 <- ninoPISON[(((i - 1) * 10 + 1) : (i * 10))]
+    p4 <- PDOSON[(((i - 1) * 10 + 1) : (i * 10))]
+    p5 <- GTOSON[(((i - 1) * 10 + 1) : (i * 10))]
+    p6 <- solarirrSON[(((i - 1) * 10 + 1) : (i * 10))]
+    p7 <- TIME[(((i - 1) * 10 + 1) : (i * 10))]
+    p8 <- minSON[(((i - 1) * 10 + 1) : (i * 10))]
+    fit_func <- function(x1,
+                         x2,x3,x4,x5,x6,x7,x8){
+   y <- a0 + 
+     beta[1] * x1 + 
+     beta[2] * x2 + beta[3] * x3 + beta[4] * x4 + beta[5] * x5 +  beta[6] * x6 +  beta[7] * x7 +  beta[8] * x8 
+   return(y)
+    }
+    Ytrend <- trendc + slop * p7
+    Ytest <- y[(((i - 1) * 10 + 1) : (i * 10))]
+    Ypre <- fit_func(p1, 
+                     p2, p3, p4, p5, p6, p7, p8)
+    perri[i] <- mean(abs(Ytest - Ypre))
+  }
+  perr_lasso[j] <- mean(perri) #sum sum sum
+}
+# determine lambda
+lambda_lasso <- lambdas[which.min(perr_lasso)]
+cat('\nThe optimal Lambda is',lambda_lasso)
+```
+
+###1b
+
+```{r}
+fit_lasso <- glmnet(X, y, alpha = 1, lambda = lambda_lasso)
+summary(fit_lasso)
+fit_lasso$beta
+```
+
+####Other than Ridge regression, parameters form Lasso regression is able to reach 0. The three left predictors are consistent with the three predictors that have the biggest mignitude in Ridge regression
+
+###1c
+
+```{r}
+ plot(lambdas, perr_lasso,xlim = c(0, 0.4), xlab = 'Lambda', ylab = 'Prediction Error')
+```
+
+####With smaller lambda，the penalty for parameters is smaller which may decrease the bias but increase the variance. However, if the penalty for parameters is too big, the parameters will lose the chance to interprete data, thus although variance will become small but the structure of the model is ruined and bias will increase and so does the prediction error. Thus there exisits a optimal penalty to balance the bias and variance thus can minimize the prediction error.
+
+###1e
+
+```{r}
+HDDpre_lasso <- predict(fit_lasso, s = lambda_lasso, newx = Xpre)
+plot(HDDmean[62:74], type = 'p', col = 'blue', ylim = c(0, 3), ylab = 'HDD', xlab = 'Year')
+lines(HDDpre_lasso,type = 'p', col = 'red')
+legend('topright', c('observation','prediction'), 
+       lty = c(1,1), col = c('blue','red'),cex = 0.6)
+
+sse <- sum((HDDmean[62:74] - mean(HDDmean[62:74]))^2)
+sst_lasso <- sum((HDDpre_lasso - HDDmean[62:74])^2)
+
+# R squared
+rsq_lasso <- 1 - sse / sst_lasso
+rsq_lasso
+cat('The Rsqure is', rsq_lasso)
+```
+
+
+#2
+##2a
+
+####I subseted a 142-year timeseries with the range of latitude (20~70), and range of longitude(167~279) for the Pacific-North America area
+
+```{r}
+#install.packages('ncdf4')
+library(ncdf4)
+airt <- nc_open('SairT2.nc')
+lat <- ncvar_get(airt, varid = 'lat')
+air <- ncvar_get(airt, varid = 'air') # already 3-dimensional col=lat row=lon
+lon <- ncvar_get(airt, varid = 'lon')
+time <- ncvar_get(airt, varid = 'time')
+
+
+##subset a ceitain region
+lat <- lat[11 : 37]
+lon <- lon[90 : 150]
+air <- air[90 : 150, 11 : 37, ]
+#nbnds <- ncvar_get(airt, varid = 'time_bnds')
+# nc_close( airT )
+
+##fill into a matrix
+Xair <- matrix(0, nrow = 27 * 61, ncol = 1704)
+for(i in (1:1704)){
+  Xair[, i] <- as.vector(air[ , , i]) 
+}
+
+#LAT <- rep(lat, 129)
+#LON <- rep(lon[1],28)
+#for (i in 2:129){
+ # LON=c(LON,rep(lon[i],28))}
+#airdf=cbind(LAT, LON, Xair)
+
+#REmove cycle trend
+decycle <- function(x){
+  xmatrix <- matrix(x, nrow = 12, byrow = F)
+  xmean <- as.vector(apply(xmatrix, 1, mean))
+  x <- x-rep(xmean, 142)
+}
+Xair <- apply(Xair, 1, decycle)
+Xair <- t(Xair)
+
+cat('the dimension of this whole dataset is', dim(air), 'where the first is longitude, second is latitude and third is length of timeseries')
+
+##remove mean apply on coloum
+#rmM <- function(x){
+#  x <- x - mean(x)
+#}
+#Xair <- apply(Xair, 1, rmM) ##matrix removed mean
+#Xair <- t(Xair)
+```
+
+####I look at montly average data, and remove the trend by subtracing the mean of each month during the total 142 years, that is, for example
+
+$$
+JAN_{mean}=\sum_i^{142}{JAN_i}/142
+$$
+$$
+JAN_i=JAN_i-JAN_{mean}
+$$
+
+##2c
+```{r}
+library(matrixStats)
+meanX <- rowMeans(Xair)
+sdX <- rowSds(Xair)
+Xair <- (Xair - meanX) 
+XairT <- t(Xair)
+covair <- cov(XairT)
+#covair <- Xair %*% XairT
+covair <- covair / length(time)
+eigenair <- eigen(covair)
+
+```
+
+##2d
+```{r}
+eivalue <- eigenair$values
+eifraction <- eivalue / sum(eivalue) # fraction of contribution
+sumef <- sum(eifraction[1:9])
+
+meff <- 1647 * mean(eivalue)^ 2 / mean(eivalue ^ 2)
+var_eivalue <- eivalue * sqrt(2 / meff)
+eivalueindex <- data.frame(eivalue, index = (1:length(eivalue)))
+plotdf <- eivalueindex[1:10,]
+library(ggplot2)
+ggplot(plotdf, aes(x = index, y = eivalue[1:10])) + geom_errorbar(aes(ymin = eivalue[1:10] - var_eivalue[1:10], ymax = eivalue[1:10] + var_eivalue[1:10])) + geom_point()
+
+cat('The sum of the fractions of variance for the first 9 eigenvectors is', sumef)
+
+```
+
+####The sum of fractions of variance did not reach 0.80 untill the 9th eigenvectors, thus I decide to retain the first 9th eigenvectors to interpret the data. 
+
+ 
+##2f
+```{r}
+eigenV1 <- eigenair$vectors[,1];eigenV6 <- eigenair$vectors[,6]
+eigenV2 <- eigenair$vectors[,2];eigenV7 <- eigenair$vectors[,7]
+eigenV3 <- eigenair$vectors[,3];eigenV8 <- eigenair$vectors[,8]
+eigenV4 <- eigenair$vectors[,4];eigenV9 <- eigenair$vectors[,9]
+eigenV5 <- eigenair$vectors[,5];
+
+a <- eigenV1 %*% t(eigenV2)
+pc1 <- t(eigenV1) %*% Xair
+pc2 <- t(eigenV2) %*% Xair
+pc3 <- t(eigenV3) %*% Xair
+pc4 <- t(eigenV4) %*% Xair
+pc5 <- t(eigenV5) %*% Xair
+pc6 <- t(eigenV6) %*% Xair
+pc7 <- t(eigenV7) %*% Xair
+pc8 <- t(eigenV8) %*% Xair
+pc9 <- t(eigenV9) %*% Xair
+```
+
+###plot
+```{r}
+mapmat <- matrix(eigenV1, nrow = 61)
+lat <- as.vector(lat)
+lat <- lat[seq(length(lat),1)]
+lon <- as.vector(lon)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue','green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF1 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+
+time1 <- seq.Date(from = as.Date('1871-01-01'), to = as.Date('2012-12-01'), by = 'month')
+ii <- 1:142
+plot(t(pc1)[12*(ii)-6], type = 'l', xlab = 'Time', ylab = 'PC1',main = 'Every June during 142 years')
+plot(time1, t(pc1), type = 'l', xlab = 'Time', ylab = 'PC1', main = 'Full timeseries during 142 years')
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+plot(t(pc1)[1:12], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The first 12 months')
+title('The first 12 months')
+plot(t(pc1)[13:24], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The second 12 months')
+title('The second 12 months')
+plot(t(pc1)[25:36], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The third 12 months')
+title('The third 12 months')
+plot(t(pc1)[37:48], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The 4th 12 months')
+title('The 4th 12 months')
+par(Opar)
+```
+
+####The mean of eigenvector is more close to 0, and the sd of eigenvector is more close to 1, thus the eigenvector should be the unitless one. For principle component1, it is relatively steady during the full time series. Looking at a specific month(June), there is a decreasing trend during the 142 years. An obvious seasonal trend can not be concluded when look the data of 12 months in a sigle year.
+
+
+
+```{r}
+mapmat <- matrix(eigenV2, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF2 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc2), type = 'l', xlab = 'Time', ylab = 'PC2', main = 'Full timeseries during 142 years')
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+plot(t(pc2)[12*(ii)-6], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every June during 142 years')
+plot(t(pc2)[12*(ii)-5], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every July during 142 years')
+plot(t(pc2)[12*(ii)-4], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every August during 142 years')
+plot(t(pc2)[12*(ii)-3], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every September during 142 years')
+par(Opar)
+```
+####A decreasing trend during 142 years for PC2 in summer months may exist.
+
+
+
+
+
+```{r}
+mapmat <- matrix(eigenV3, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF3 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc3), type = 'l', xlab = 'Time', ylab = 'PC2', main = 'Full timeseries during 142 years')
+plot(t(pc3)[12*(ii)-6], type = 'l', xlab = 'Time', ylab = 'PC3',main = 'Every June during 142 years')
+```
+
+####Decreasing trend for June becomed not that obvious.
+
+
+
+
+
+```{r}
+mapmat <- matrix(eigenV4, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF4 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc4), type = 'l', xlab = 'Time', ylab = 'PC4', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV5, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF5 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc5), type = 'l', xlab = 'Time', ylab = 'PC5', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV6, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF6 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc6), type = 'l', xlab = 'Time', ylab = 'PC6', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV7, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF7 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc7), type = 'l', xlab = 'Time', ylab = 'PC7', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV8, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF8 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc8), type = 'l', xlab = 'Time', ylab = 'PC8', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV9, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF9 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc9), type = 'l', xlab = 'Time', ylab = 'PC9', main = 'Full timeseries during 142 years')
+```
+
+####The fluctuation of principle component 9 presents larger 'waves' than other PCs, and also presents a seemingly periodic change.
+
+
+
+
+
+##2g
+
+```{r}
+lat <- ncvar_get(airt, varid = 'lat')
+lat <- lat[11 : 37]
+Xair <- matrix(0, nrow = 27 * 61, ncol = 1704)
+for(i in (1:1704)){
+  Xair[, i] <- as.vector(air[ , , i]) 
+}
+latscale <- mapply(rep, lat, times = rep(61, 27)) * pi / 180
+
+```
+
+```{r}
+##decycle
+decycle <- function(x){
+  xmatrix <- matrix(x, nrow = 12, byrow = F)
+  xmean <- as.vector(apply(xmatrix, 1, mean))
+  x <- x-rep(xmean, 142)
+}
+Xair <- apply(Xair, 1, decycle)
+Xair <- t(Xair)
+
+library(matrixStats)
+meanX <- rowMeans(Xair)
+Xair <- (Xair - meanX)
+
+for (i in (1 : 1704)){
+  Xair[, i] <- Xair[,i] * sqrt(cos(latscale))
+}
+XairT <- t(Xair)
+
+##
+
+covair <- Xair %*% XairT
+covair <- covair / length(time)
+eigenair <- eigen(covair)
+
+
+eivalue <- eigenair$values
+eifraction <- eivalue / sum(eivalue) # fraction of contribution
+sumef1 <- sum(eifraction[1:10])
+
+#covair2 <- covair %*% covair
+#meff <- (sum(diag(covair))) ^ 2 / sum(diag(covair2))
+meff <- 1647 * mean(eivalue)^ 2 / mean(eivalue ^ 2)
+var_eivalue <- eivalue * sqrt(2 / meff)
+eivalueindex <- data.frame(eigenvalue = eivalue, index = (1:length(eivalue)))
+plotdf <- eivalueindex[1:10,]
+cat('The sum of the fractions of variance for the first 10 eigenvectors is', sumef1)
+
+```
+####Retain the first 10 eigenvectors
+
+
+
+
+
+
+```{r}
+eigenV1 <- eigenair$vectors[,1];eigenV6 <- eigenair$vectors[,6]
+eigenV2 <- eigenair$vectors[,2];eigenV7 <- eigenair$vectors[,7]
+eigenV3 <- eigenair$vectors[,3];eigenV8 <- eigenair$vectors[,8]
+eigenV4 <- eigenair$vectors[,4];eigenV9 <- eigenair$vectors[,9]
+eigenV5 <- eigenair$vectors[,5];eigenV10 <- eigenair$vectors[,10]
+
+a <- eigenV1 %*% t(eigenV2)
+pc1 <- t(eigenV1) %*% Xair
+pc2 <- t(eigenV2) %*% Xair
+pc3 <- t(eigenV3) %*% Xair
+pc4 <- t(eigenV4) %*% Xair
+pc5 <- t(eigenV5) %*% Xair
+pc6 <- t(eigenV6) %*% Xair
+pc7 <- t(eigenV7) %*% Xair
+pc8 <- t(eigenV8) %*% Xair
+pc9 <- t(eigenV9) %*% Xair
+pc10 <- t(eigenV10) %*% Xair
+```
+
+###plot
+```{r}
+mapmat <- matrix(eigenV1, nrow = 61)
+lat <- as.vector(lat)
+lat <- lat[seq(length(lat),1)]
+lon <- as.vector(lon)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue','green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF1 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+
+time1 <- seq.Date(from = as.Date('1871-01-01'), to = as.Date('2012-12-01'), by = 'month')
+ii <- 1:142
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+plot(t(pc1)[12*(ii)-6], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every June during 142 years')
+plot(t(pc1)[12*(ii)-5], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every July during 142 years')
+plot(t(pc1)[12*(ii)-4], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every August during 142 years')
+plot(t(pc1)[12*(ii)-3], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every September during 142 years')
+par(Opar)
+plot(time1, t(pc1), type = 'l', xlab = 'Time', ylab = 'PC1', main = 'Full timeseries during 142 years')
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+plot(t(pc1)[1:12], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The first 12 months')
+title('The first 12 months')
+plot(t(pc1)[13:24], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The second 12 months')
+title('The second 12 months')
+plot(t(pc1)[25:36], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The third 12 months')
+title('The third 12 months')
+plot(t(pc1)[37:48], type = 'l', xlab = 'Time', ylab = 'PC1', sub = 'The 4th 12 months')
+title('The 4th 12 months')
+par(Opar)
+```
+
+####The mean of eigenvector is more close to 0, and the sd of eigenvector is more close to 1, thus the eigenvector should be the unitless one. For principle component1, an obvious seasonal trend still can not be concluded when look the data of 12 months in a sigle year. Compared with pre-scaling, the decreasing trend for summer attenuated.
+
+
+
+
+```{r}
+mapmat <- matrix(eigenV2, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF2 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc2), type = 'l', xlab = 'Time', ylab = 'PC2', main = 'Full timeseries during 142 years')
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+plot(t(pc2)[12*(ii)-6], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every June during 142 years')
+plot(t(pc2)[12*(ii)-5], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every July during 142 years')
+plot(t(pc2)[12*(ii)-4], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every August during 142 years')
+plot(t(pc2)[12*(ii)-3], type = 'l', xlab = 'Time', ylab = 'PC2')
+title('Every September during 142 years')
+par(Opar)
+```
+####An increasing trend during 142 years for PC2 in summer months may exist instead.
+
+
+
+
+
+```{r}
+mapmat <- matrix(eigenV3, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF3 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc3), type = 'l', xlab = 'Time', ylab = 'PC2', main = 'Full timeseries during 142 years')
+plot(t(pc3)[12*(ii)-6], type = 'l', xlab = 'Time', ylab = 'PC3',main = 'Every June during 142 years')
+```
+
+####Trend for June becomed not that obvious.
+
+
+
+
+
+```{r}
+mapmat <- matrix(eigenV4, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF4 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc4), type = 'l', xlab = 'Time', ylab = 'PC4', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV5, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF5 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc5), type = 'l', xlab = 'Time', ylab = 'PC5', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV6, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF6 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc6), type = 'l', xlab = 'Time', ylab = 'PC6', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV7, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF7 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc7), type = 'l', xlab = 'Time', ylab = 'PC7', main = 'Full timeseries during 142 years')
+```
+
+
+```{r}
+mapmat <- matrix(eigenV8, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF8 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc8), type = 'l', xlab = 'Time', ylab = 'PC8', main = 'Full timeseries during 142 years')
+```
+
+####A seemingly periodic change comes up.
+
+
+
+
+```{r}
+mapmat <- matrix(eigenV9, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF9 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc9), type = 'l', xlab = 'Time', ylab = 'PC9', main = 'Full timeseries during 142 years')
+```
+
+####The fluctuation of principle component 9 presents wider waveforms than other PCs, and also presents a seemingly periodic change.
+
+
+
+
+```{r}
+mapmat <- matrix(eigenV10, nrow = 61)
+mapmat <- mapmat[, seq(length(mapmat[1,]),1)]
+rgbpalette <- colorRampPalette(c('purple', 'blue', 'green', 'yellow','orange','red', 'dark red'), interpolate = 'spline')
+int <- seq(-0.13, 0.15, length = 91)
+library(maps)
+filled.contour(lon, lat, mapmat, color.palette = rgbpalette, levels = int, plot.title=title(main="EOF10 from 1871-2012 temperature data"),
+               plot.axes={axis(1); axis(2);map('world2', add=TRUE);grid()},
+               key.title=title(main="Scale"))
+plot(time1, t(pc10), type = 'l', xlab = 'Time', ylab = 'PC10', main = 'Full timeseries during 142 years')
+```
+
+
+#### The results from pre- and post-scaling are quite different.
+####Taking the first PC as an example, the first PC is a factor that effects most on my original object(temperature within the chosen area), since the seansonal trend has been removed brfore, it is reasonable that PC1 didn't present a seasonal trend. The time series indicate how this factor change along with time.
+####For those presenting a periodic trend, they can be some periodic phenomenon, for example if we have priori knowledge that the temperature can be influenced by El Nino, and  match the time series of El Nino with that of PCx, it may fit well.
+####The spatial pattern indicate how the effective factors change along whith space.

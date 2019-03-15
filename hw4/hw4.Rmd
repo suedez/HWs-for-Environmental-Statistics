@@ -1,0 +1,320 @@
+---
+title: "hw4"
+author: Xinrui Zhang UID:605231530
+output: html_document
+---
+##P2
+1. Strict Stationarity
+The joint distribution of any moments of any degree is always all the same and never depend on location. No trend, the distribution shape won't change, just like white noise.
+
+2. Intrinsic Stationarity
+For instrisic stationarity, a mean is assumed constant between location, the variance of the difference is the same between any two points that are at same distance and diretion apart no matter which two points are chosen.
+
+$$
+E[s(x+h) - s(x)]=0
+$$
+
+$$
+Var[s(x+h)-s(h)]=2\gamma(h)
+$$
+
+3. Second-Order Stationarity
+Second-order stationarity is a special type of intrinsic stationarity, where the covariance between two points is the same for a certain distance and direction, regardless where those two points locate. Second-order sationarity must also be a intrinsic stationarity, but intrinsic stationarity is not necessarily a second-order staionarity.
+
+$$
+E(s(x))=\mu
+$$
+
+$$
+E[(s(x)-\mu)^2]=\sigma^2
+$$
+
+$$
+Cov[s(x), s(x+h)] = E[(s(x)-\mu)(s(x+h)-\mu)]=C(h)
+$$
+
+
+
+##P3
+
+$$
+\gamma(h)=\frac{1}{2}var(Y(s+h)-Y(h))
+$$
+
+$$
+\gamma(h)=\frac{1}{2}(var(Y(s+h))+var(Y(s))-2E[(Y(s)-E(Y(s)))(Y(s+h)-E(Y(s+h)))])
+$$
+
+
+$$
+\gamma(h)=\frac{1}{2}(C(0)+C(0)-2E[cov(Y(s+h),Y(s))])
+$$
+
+$$
+\gamma(h)=\frac{1}{2}(2C(0)-2C(h))
+$$
+
+
+$$
+\gamma(h)=C(0)-C(h)
+$$
+
+##P4
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(tidyverse)
+library(dplyr)
+library(gstat)
+```
+
+
+```{r}
+#data read-in
+Temp <- read.csv('tmax_01feb2019.csv')
+Temp %>% filter(lat >= 32 & lat <= 36) %>%
+  filter(lon >= -119 & lon <= -115) -> Temp
+
+TempO <- Temp[is.na(Temp$TMAX) == F, ] #observed temperature
+
+```
+
+
+```{r}
+#linear regression to define mean function (funcation of elevation)
+lm1 <- lm(TempO$TMAX ~ TempO$elev)
+summary(lm1)
+```
+
+
+
+```{r echo=TRUE}
+#errors
+e <- TempO$TMAX -(TempO$elev * lm1$coefficients[2] + lm1$coefficients[1])
+semiv <- c() # vector to store semivariance
+h <- c()  # vector to store lag
+nO <- nrow(TempO)#number of observations
+for (i in (1 : nO-1)){
+  for (j in (2 : nO)){
+   semivi <- (e[i] - e[j])^2/2
+   hi <- sqrt((TempO$lat[i] - TempO$lat[j]) ^ 2 + (TempO$lon[i] - TempO$lon[j]) ^ 2 )
+   semiv <- c(semiv, semivi)
+   h <- c(h, hi)
+  }
+}
+
+# drop duplicate value and rank lags
+variog <- data.frame(semiv, h)
+variog %>% filter(h <= max(h)/2) %>%  #cutoff at h=max(h)/2
+  arrange(desc(h)) -> variog
+variog %>% group_by(h) %>%
+  dplyr :: summarise(semiv = mean(semiv)) -> variog
+
+plot(variog$h, variog$semiv,
+     ylab = 'semivariance',
+     xlab = 'distance', main = 'Before Grouping')
+
+
+#group lags 
+width <- max(h)/2/15
+group <- c()
+for (j in (1 : 15)){ #15 groups in total
+  for(i in (1 : nrow(variog))){
+    if (variog$h[i] <= min(h) + j * width & variog$h[i] >= min(h) + (j - 1) * width){
+    group <- c(group, j)
+  }
+  }
+}
+variog$group <- group
+
+group_size <- tapply(variog$group,
+                     as.factor(variog$group), length)
+variog %>% group_by(group) %>%
+  dplyr :: summarise(h = median(h),
+                     semiv = mean(semiv)) -> variogAVE
+
+#plot empirical variogram
+plot(variogAVE$h, variogAVE$semiv,
+     ylab = 'semivariance',
+     xlab = 'distance', 
+     xlim = c(0, 2),
+     ylim = c(0, 6), main = 'After Grouping')
+```
+
+
+```{r}
+# fit variogram by software and see the fitted parameters
+v <- variogram(object = TMAX ~ elev, locations = ~ lon + lat, data = TempO)
+
+v1_fit <- fit.variogram(v, vgm(model ='Sph' ,
+                               psill = 4,
+                               nugget = 1.8,
+                               range = 1.8))
+v1_fit
+```
+
+
+```{r}
+# built model using fitted parameters
+variogram <- function(h){
+  semi <- c()
+ for (i in 1:length(h)){
+   if (h[i] <= v1_fit$range[2]){
+     semi[i] <- v1_fit$psill[1] + v1_fit$psill[2]  * (3*h[i]/2/(v1_fit$range[2])-h[i]^3/2/(v1_fit$range[2]^3))
+   }else{
+     semi[i] <- v1_fit$psill[1] + v1_fit$psill[2]
+   }
+ }
+  return(semi)
+}
+
+#check the model
+fited <- seq(from = 0, to = 2, length = 1000)
+plot(variogAVE$h, variogAVE$semiv,
+     ylab = 'semivariance',
+     xlab = 'distance', 
+     xlim = c(0, 2),
+     ylim = c(0, 6))
+lines(fited, variogram(fited), type="l", col="blue")
+legend('topleft', c('empirical', 'fitted'), lty = c(1,1),
+       col = c('black', 'blue'), cex = 1)
+
+# store parameters
+variogram_par <- c(v1_fit$psill[1], v1_fit$psill[2], v1_fit$range[2])
+```
+
+```{r}
+# leave 20 station out for testing
+out_index <- which(is.na(match(Temp$id, TempO$id[1:20])) == F)
+TempOl <- TempO[-(1:20),] #leave 20 out
+
+# get covariance matrix
+sigmaM <- matrix(0, nrow = nrow(TempOl), ncol = nrow(TempOl))
+
+for(i in 1:nrow(TempOl)){
+  for(j in i:nrow(TempOl)){
+    h <- sqrt((TempOl$lat[i] - TempOl$lat[j]) ^ 2 + (TempOl$lon[i] - TempOl$lon[j]) ^ 2)
+    sigmai <- (variogram_par[1] + variogram_par[2]) - variogram(h)
+    sigmaM[i, j] <- sigmai
+    sigmaM[j, i] <- sigmai
+  }
+}
+
+# matrix for calculation, elevation is the preditor
+TempOl %>% select(elev) %>%
+  as.matrix() -> XO
+
+# check mean function e
+beta_wls <- solve(t(XO) %*% solve(sigmaM) %*% XO) %*% t(XO) %*% solve(sigmaM) %*% as.matrix(TempOl$TMAX) #weighted least squares
+beta_wls
+
+# gamma matrices
+gammaM <- matrix(0, nrow = nrow(TempOl), ncol = nrow(TempOl))
+
+for(i in 1:nrow(XO)){
+  for(j in i:nrow(XO)){
+    h <- sqrt((TempOl$lat[i] - TempOl$lat[j])^2 + (TempOl$lon[i] - TempOl$lon[j])^2)
+    gami <- variogram(h)
+    gammaM[i, j] <- gami
+    gammaM[j, i] <- gami
+  }
+}
+
+#Temppre <- Temp
+#Temppre$TMAX[out_index] 
+
+Temp %>% select(elev) %>%
+  as.matrix() -> Xpre
+
+Xpre <- as.matrix(Temp$elev)
+
+gammaPRE <- matrix(0, nrow=nrow(XO), ncol=nrow(Temp))
+
+for(i in 1:nrow(XO)){
+  for(j in 1:nrow(Temp)){
+    h <- sqrt((TempOl$lat[i] - Temp$lat[j])^2 + (TempOl$lon[i] - Temp$lon[j])^2)
+    gam <- variogram(h)
+    gammaPRE[i, j] <- gam
+  }
+}
+
+prediction <- c()
+predicted_var <- c()
+gammaI <- solve(gammaM)
+A <- solve(t(XO) %*% solve(gammaM) %*% XO)
+
+for(i in 1:nrow(Temp)){
+  # covariates and gamma vector
+  gamma0 <- as.matrix(gammaPRE[, i])
+  x0 <- as.matrix(as.vector(t(Xpre[i, ])))
+  
+  # prediction
+  pred_1 <- XO %*% A %*% (x0 - t(XO) %*% gammaI %*% gamma0)
+  pred <- t(gamma0 + pred_1) %*% gammaI %*% as.matrix(TempOl$TMAX)
+  prediction <- c(prediction, pred)
+  
+  # variance
+  var1 <- t(gamma0) %*% gammaI %*% gamma0
+  var2 <- t(XO) %*% gammaI %*% gamma0 - x0
+  pred_var <- var1 - t(var2) %*% A %*% var2
+  predicted_var <- c(predicted_var, pred_var)
+}
+
+Temp$prediction <- prediction
+Temp$var <- predicted_var
+
+#Temp$prediction[out_index]
+#TempO$TMAX[1 : 20]
+plot(TempO$TMAX[1 : 20], ylim = c(1, 60),
+     ylab = 'TMAX')
+lines(Temp$prediction[out_index])
+lines(Temp$prediction[out_index] - Temp$var[out_index],
+      col = 'blue')
+lines(Temp$prediction[out_index] + Temp$var[out_index],
+      col = 'red')
+Temp[out_index, ]
+```
+The model performs well I think.
+
+
+From the linear regression, P-value indicates a significance, thus elevation is considered as a predictor for mean function. The mean function is as below:
+
+$$
+\mu(s_i) = 18.3926259 - 0.0048267 * elevation_i
+$$
+
+
+The variogram is fitted as a Spherical function as
+ 
+$$
+\gamma(h)=\begin{cases}
+nugget + partial. sill*(\frac{3h}{2range}-\frac{h^3}{2range^3})&h\leq range\\
+nugget +partial.sill&h>range
+	\end{cases}
+$$
+
+Initial guess of parameters is obtaind from empirical variogram. The fitted parameter is as:
+```{r}
+v1_fit
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

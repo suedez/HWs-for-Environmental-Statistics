@@ -1,0 +1,371 @@
+---
+title: "HW1"
+author: "Xinrui Zhang UID:605231530"
+output: html_document
+---
+
+##Problem 3
+
+**pre-processing**
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+## pre-processing
+
+data_max<-read.csv('USW00023174_TMAX_clean.csv',header = T)
+value_max<-data_max$value
+
+data_min <- read.csv('USW00023174_TMIN_clean.csv',header = T)
+value_min <- data_min$value
+Nyear<-floor(length(value_max)/365)-1
+Nyear_full <- floor(length(value_max)/365)-1
+DAYofYEAR <-c(1:365)
+date_1<-as.Date('1944-8-1')
+date_2<-as.Date('1944-12-31')
+interval1 <- as.integer(difftime(date_2,date_1,units='days'))
+DAY1944 <- c((365-interval1):365)
+day_ordered<-c(DAY1944,rep(DAYofYEAR,Nyear_full)) 
+day_left <- length(value_max)-length(day_ordered) # day has the same order as the data
+day_ordered <- c(day_ordered,c(1:day_left))
+
+## separate a year into 12 month
+daySEPseason <- day_ordered #day seperated by month
+daySEPseason[(daySEPseason>=1 & daySEPseason<=59) | 
+              (daySEPseason>=335 & daySEPseason<=365)] <-1 #DJF
+daySEPseason[(daySEPseason>=60 & daySEPseason<=151)] <-2 #MAM
+daySEPseason[daySEPseason>=152 & daySEPseason<=243] <-3 #JJA
+daySEPseason[daySEPseason>=244 & daySEPseason<=334] <-4 #SON
+
+## construct a data frame to process missing values
+seasonDATA_frame <- data.frame(daySEPseason,value_max)
+seasonDATA_frameMIN <- data.frame(daySEPseason,value_min)
+seasonDATA_frame <- seasonDATA_frame[seasonDATA_frame$value_max!=-999.9,]
+seasonDATA_frameMIN <- seasonDATA_frameMIN[seasonDATA_frameMIN$value_min!=-999.9,]
+
+## divide data into 4 seasons
+DJF_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==1]
+MAM_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==2]
+JJA_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==3]
+SON_max <- seasonDATA_frame$value_max[seasonDATA_frame$daySEPseason==4]
+
+DJF_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==1]
+MAM_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==2]
+JJA_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==3]
+SON_min <- seasonDATA_frameMIN$value_min[seasonDATA_frameMIN$daySEPseason==4]
+```
+
+### a)
+**maximum**
+```{r}
+## maximum temperature
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+hist(DJF_max,freq = F,xlab = 'Temperature',
+     main='DJF maximum temperature',cex.main=0.8,breaks = 'Scott')#using Scott's method to determine bin width
+lines(density(DJF_max,bw='nrd'),col='red')
+hist(MAM_max,freq = F,xlab = 'Temperature',
+     main='MAM maximum temperature',cex.main=0.8,breaks = 'Scott')
+lines(density(MAM_max,bw='nrd'),col='red')
+hist(JJA_max,freq = F,xlab = 'Temperature',
+     main='JJA maximum temperature',cex.main=0.8,breaks = 'Scott')
+lines(density(JJA_max,bw='nrd'),col='red')
+hist(SON_max,freq = F,xlab = 'Temperature',
+     main='SON maximum temperature',cex.main=0.8,breaks = 'Scott')
+lines(density(SON_max,bw='nrd'),col='red')
+par(Opar)
+```
+
+**minimum**
+```{r}
+## minimum temperature
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+hist(DJF_min,freq = F,xlab = 'Temperature',
+     main='DJF minimum temperature',cex.main=0.8,breaks = 'Scott')
+lines(density(DJF_min,bw='nrd'),col='red')
+hist(MAM_min,freq = F,xlab = 'Temperature',
+     main='MAM minimum temperature',cex.main=0.8,breaks = 'Scott')
+lines(density(MAM_min,bw='nrd'),col='red')
+hist(JJA_min,freq = F,xlab = 'Temperature',
+     main='JJA minimum temperature',cex.main=0.8,breaks = 'Scott')
+lines(density(JJA_min,bw='nrd'),col='red')
+hist(SON_min,freq = F,xlab = 'Temperature',
+     main='SON minimum temperature',cex.main=0.8,breaks = 'Scott')
+lines(density(SON_min,bw='nrd'),col='red')#using Scott's method to determine bin width
+par(Opar)
+```
+
+**bonus (bin size=0.5)**
+```{r}
+## bonus
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(2,2),ann=F)
+hist(DJF_max,freq = F,xlab = 'Temperature',
+     main='DJF',cex.main=0.8,breaks = 2*(max(DJF_max)-min(DJF_max)),xlim = c(min(DJF_max),max(DJF_max)),
+     col='blue')
+lines(density(DJF_max,bw=0.5),col='red')
+hist(MAM_max,freq = F,xlab = 'Temperature',
+     main='MAM',cex.main=0.8,breaks = 2*(max(MAM_max)-min(MAM_max)),xlim = c(min(MAM_max),max(MAM_max)),
+     col='blue')
+lines(density(MAM_max,bw=0.5),col='red')
+hist(JJA_max,freq = F,xlab = 'Temperature',
+     main='JJA',cex.main=0.8,breaks = 2*(max(JJA_max)-min(JJA_max)),xlim = c(min(JJA_max),max(JJA_max)),
+     col='blue')
+lines(density(JJA_max,bw=0.5),col='red')
+hist(SON_max,freq = F,xlab = 'Temperature',
+     main='SON',cex.main=0.8,breaks = 2*(max(SON_max)-min(SON_max)),xlim = c(min(SON_max),max(SON_max)),
+     col='blue')
+lines(density(SON_max,bw=0.5),col='red')
+par(Opar)
+```
+
+**The hitograms present some blanks when `bin width` changed to `0.5`, since the whole range is devided more accurately into smaller sub-ranges, chance exists that no value hit exactly into that certain smaller range.Given above, to correctly chose bin size is important.**
+
+###b)
+```{r}
+SUMTx <- 0
+for (i in (1:length(DJF_max))){
+  SUMTx<-SUMTx + DJF_max[i]
+}
+MEANTx <- SUMTx/length(DJF_max)
+print(paste('mean for winter maximum temperature is ', MEANTx)) #mean
+
+SorwinterTx <- sort(DJF_max) # sorted winter data
+MEDIANTx <- (sort(DJF_max)[length(DJF_max)/2]) #mediant
+print(paste('mediant for winter maximum temperature is ', MEDIANTx))
+
+VARIANCE <- 0
+MeanAbDev <- 0 # mean absolute deviation
+m3 <- 0
+m4 <- 0
+for (i in (1:length(DJF_max))){
+  VARIANCE <- VARIANCE + (DJF_max[i]-MEANTx)^2
+  MeanAbDev <- MeanAbDev + abs(DJF_max[i]-MEANTx)
+  m3 <- m3 + (DJF_max[i]-MEANTx)^3
+  m4 <- m4 + (DJF_max[i]-MEANTx)^4
+}
+SDTx <- sqrt(VARIANCE/length(DJF_max)) #standard deviation
+MeanAbDev <- MeanAbDev/length(DJF_max) # mean absolute deviation
+m3 <- m3/length(DJF_max)
+m4 <- m4/length(DJF_max)
+SKEWNESS <- m3/(SDTx^3)
+KURTOSIS <- m4/(SDTx^4)
+print(paste('standard deviation for winter maximum temperature is ', SDTx))
+print(paste('skewness for winter maximum temperature is ', SKEWNESS))
+print(paste('kurtosis for winter maximum temperature is ', KURTOSIS))
+print(paste('mean absolute deviation for winter maximum temperature is ', MeanAbDev))
+Q25Tx <- SorwinterTx[floor(0.25*length(DJF_max))]
+Q75Tx <- SorwinterTx[floor(0.75*length(DJF_max))] 
+print(paste('25 quantile for winter maximum temperature is ', Q25Tx))
+print(paste('75 quantile for winter maximum temperature is ', Q75Tx))
+```
+
+## problem 4
+### a) to determine the parameter lambda
+
+**Since the original data has a positive skew, the lamda should smaller than 1. First use a sequence of assumed lambda to caculate some evaluation indicators**
+
+```{r}
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(1,2),ann=F)
+LAMBDA <- seq(-0.5,-0.1,by=0.1)
+for (i in LAMBDA){
+  BCtry <- (DJF_max^i-1)/i
+  Llambda <- -length(DJF_max)/2*log((sd(BCtry))^2)+(i-1)*sum(log(BCtry))
+  print(paste('when lambda =',i,' log-likelyhood is',Llambda))
+  dlambda <- abs(mean(BCtry)-
+                   median(BCtry))/(as.numeric(quantile(BCtry,na.rm = T)[4]-
+                   quantile(BCtry,na.rm = T)[2]))
+  print(paste('when lambda =',i,' d statistic is',dlambda))
+  #quantile[2] means 25%
+  boxplot(BCtry,main=paste('lambda=',i))
+}
+par(Opar)
+
+Opar <- par(no.readonly = T) # store the original settings
+par(mfrow=c(1,2),ann=F)
+LAMBDA <- seq(0.1,0.5,by=0.1)
+for (i in LAMBDA){
+  BCtry <- (DJF_max^i-1)/i
+  Llambda <- -length(DJF_max)/2*log((sd(BCtry))^2)+(i-1)*sum(log(BCtry))
+  print(paste('when lambda =',i,' log-likelyhood is',Llambda))
+  dlambda <- abs(mean(BCtry)-
+                   median(BCtry))/(as.numeric(quantile(BCtry,na.rm = T)[4]-
+                   quantile(BCtry,na.rm = T)[2]))
+  print(paste('when lambda =',i,' d statistic is',dlambda))
+  #quantile[2] means 25%
+  boxplot(BCtry,main=paste('lambda=',i))
+}
+par(Opar)
+```
+
+**lambda=-0.5 seems meet the biggest log-likelyhood and smallest Hinkley statistics, but from the box plots, lambda= 0.3 supports a more symmetric shape. Following transformation use a buit-in function to determine the lambda.**
+
+```{r}
+library('forecast')
+BoxCox.lambda(DJF_max,method = 'loglik') # use log-likelihood method to determine lambda
+```
+
+
+### b) do data transformation and check how close it is compared to normal distribution (lambda=-0.4)
+```{r message=FALSE, warning=FALSE}
+
+DJF_maxBC <- as.numeric(BoxCox(DJF_max,lambda = -0.4))
+library('moments')
+BCsk <- skewness(DJF_maxBC)
+BCku <-kurtosis(DJF_maxBC)
+print(paste('skweness after boxcox is ',BCsk))
+print(paste('kurtosis after boxcox is ',BCku))
+library(fitdistrplus)
+plot(fitdist(DJF_max,'norm',method='mle'), sub='before transformation')
+plot(fitdist(DJF_maxBC,'norm',method = 'mle'),sub='after transformation')
+
+```
+
+**Skewness after transformation is more close to 0 and kurtosis after transformation is more close to 3.**
+**And density plot shows that transformation has more effect on the relatively large values, 'twisting' them into normal distribution shape. From the Q-Q plot, the deviation occurs when it comes to extrem values, which is also presented in the box plot.**
+
+## problem5
+### a)
+
+**Thom's approximation is writtecn as follow**
+```{r}
+## Thom's
+lnDJF_max <- log(DJF_max)
+D <- log(mean(DJF_max))-mean(lnDJF_max)
+ALPHA <- (1+sqrt(1+4*D/3))/(4*D)
+BETA <- mean(DJF_max)/ALPHA
+print(paste('shape =',ALPHA,' sale =',BETA))
+```
+
+### b)
+```{r}
+## built-in function
+library(MASS)
+fitdistr(DJF_max,"gamma")
+
+print(paste("shape calculated by Thom's approximation is",ALPHA))
+print(paste("rate calculated by Thom's approximation is",1/BETA))
+```
+
+**The results from Thom's approximation and built-in function are quiet similar, the source code for the built-in function is written as follow**
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+ if (distname == "gamma" && is.null(start)) {
+            if (any(x < 0)) 
+                stop("gamma values must be >= 0")
+            m <- mean(x)
+            v <- var(x)
+            start <- list(shape = m^2/v, rate = m/v)
+            start <- start[!is.element(names(start), dots)]
+            control <- list(parscale = c(1, start$rate))
+        }
+```
+
+### c)
+$$
+D=ln(\bar x)-\frac{\sum_{i=1}^{\text{n}} ln(x_i)} {n}
+$$
+$$
+x_{new}=10x
+$$
+$$
+D_{new}=ln(10\bar x)-\frac{\sum_{i=1}^{n} ln(10x_i)} {n}
+$$
+$$
+D_{new}=ln(10)+ln(\bar x)-\frac{nln(10)} {n}-\frac{\sum_{i=1}^{\text{n}} ln(x_i)} {n}=D
+$$
+
+**Thus the two parameters should have no change**
+
+### d)
+```{r}
+hist(DJF_max,freq = F,xlab = 'Temperature',
+     main='DJF',cex.main=0.8,breaks='Scott')
+x1 <- seq(min(DJF_max),max(DJF_max),length=length(DJF_max))
+y1 <- dgamma(x1,ALPHA,rate=1/BETA) #density
+# how about accumulative density function? pgamma qgamma
+lines(y1~x1,col='red')
+```
+
+### e)
+```{r}
+library('fitdistrplus')
+gammaFIT <- fitdist(DJF_max,'gamma',method='mme')
+plot(gammaFIT)
+
+```
+
+**The Q-Q plot shows a better fit compared with the case where we first do box-cox transformation and fit the transformed data to normal distribution, while the density plot shows that original data clusters more around the mean than gamma distribution does.**
+
+## problem 6
+
+### a)
+```{r}
+JJA_maxbeyond <- JJA_max[JJA_max >= 33.3]
+beyondFRACTION <- length(JJA_maxbeyond)/length(JJA_max)
+print(paste('fraction of days that were as least 33.3 degree centigrade = ',beyondFRACTION))
+```
+
+### b)
+```{r}
+Sn <- (33.3-mean(JJA_max))/sd(JJA_max) # standard normaly
+print(paste('standard anomaly is',Sn))
+```
+**Regarding to the reference table, the probability of observing a day at least 33.3 degree centigrade is 0.0008.**
+
+```{r warning=FALSE}
+normalDIST <- fitdist(JJA_max,'norm')
+plot(normalDIST)
+```
+
+**The fit of normal distribution is not perfect, to fit the data into normal distribution, it is assumed that the data are mutually independent. Use acf function to test the correlation as below:**
+```{r}
+acf(JJA_max,lag.max = 730)
+```
+
+**It is obvious that the data are not mutually independent.**
+
+### d)
+```{r}
+## extract data for full years
+FYvalue_max <- value_max[(interval1+2) : (interval1+1+Nyear_full*365)]
+
+YSfactor <- c() # year seperator
+for (i in (1:Nyear)){
+  YSfactor <- c(YSfactor,rep(i,365))
+}
+YSfactor <- as.factor(YSfactor)
+maxTx <- tapply(FYvalue_max, YSfactor, max)
+maxTx <- as.numeric(maxTx)
+date_3 <- as.Date('2013-8-13')
+index1 <- as.numeric(difftime(date_3,date_1,units = 'days'))
+Tx20130813 <- value_max[index1+1]
+hist(maxTx,freq = F, breaks = 20)
+abline(v=Tx20130813,col='red')
+fraction2 <- sum(maxTx>=33.3)/length(maxTx)
+print(paste('fraction is',fraction2))
+```
+
+**Although the probability of observing a temperature hotter than 33.3 degree centigrade during the whole time series is very small, but when only look at annual maximum temperature, the fraction of years has maximum tempareture greater than 33.3 is high, which means the occurance of temperature higher than 33.3 is not a 'extreme' phenomenon, on the contrary, it is quite normal due to seasonality(i.e the temperature data is seasonal and not independent) **
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
